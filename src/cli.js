@@ -1,3 +1,11 @@
 #!/usr/bin/env node
 
-console.log('hello world');
+const minimist = require('minimist');
+const args = minimist(process.argv.slice(2), {
+  alias: {
+    t: 'token',
+  },
+  string: ['token'],
+});
+
+console.log(args);

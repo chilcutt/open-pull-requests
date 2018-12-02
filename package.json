@@ -5,6 +5,7 @@
   "author": "Kyle Chilcutt <kyle@chilcutt.com>",
   "license": "MIT",
   "dependencies": {
+    "minimist": "^1.2.0",
     "node-fetch": "^2.3.0"
   },
   "bin": {
