@@ -28,6 +28,17 @@ async function perform() {
 perform();
 
 async function getPullRequests({ token, repo }) {
+  if (Array.isArray(repo)) {
+    const dataFromRepos = await Promise.all(repo.map((r) => {
+      return getPullRequestsFromRepo({ token, repo: r });
+    }));
+    return [].concat(...dataFromRepos);
+  } else {
+    return getPullRequestsFromRepo({ token, repo });
+  }
+}
+
+function getPullRequestsFromRepo({ token, repo }) {
   return fetch(
     `https://api.github.com/repos/${repo}/pulls`,
     {
@@ -42,7 +53,7 @@ async function getPullRequests({ token, repo }) {
 
 function logOutput(pullRequests) {
   pullRequests.forEach((pr) => {
-    console.log(`${pr.number} ${pr.user.login} ${pr.title}`);
+    console.log(`${pr.head.repo.full_name} ${pr.number} ${pr.user.login} ${pr.title}`);
   });
 }
 
