@@ -5,10 +5,12 @@ const minimist = require('minimist');
 
 const args = minimist(process.argv.slice(2), {
   alias: {
+    d: 'display',
     r: 'repo',
     t: 'token',
   },
   string: [
+    'display',
     'token',
     'repo',
   ],
@@ -16,7 +18,11 @@ const args = minimist(process.argv.slice(2), {
 
 async function perform() {
   const pullRequests = await getPullRequests(args);
-  logOutput(pullRequests);
+  if (args.display == 'url') {
+    logUrls(pullRequests);
+  } else {
+    logOutput(pullRequests);
+  }
 }
 
 perform();
@@ -37,5 +43,11 @@ async function getPullRequests({ token, repo }) {
 function logOutput(pullRequests) {
   pullRequests.forEach((pr) => {
     console.log(`${pr.number} ${pr.user.login} ${pr.title}`);
+  });
+}
+
+function logUrls(pullRequests) {
+  pullRequests.forEach((pr) => {
+    console.log(pr.html_url);
   });
 }
