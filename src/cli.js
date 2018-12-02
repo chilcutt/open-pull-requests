@@ -15,8 +15,8 @@ const args = minimist(process.argv.slice(2), {
 });
 
 async function perform() {
-  const prData = await getPullRequests(args);
-  console.log(prData);
+  const pullRequests = await getPullRequests(args);
+  logOutput(pullRequests);
 }
 
 perform();
@@ -32,4 +32,10 @@ async function getPullRequests({ token, repo }) {
       },
     },
   ).then(response => response.json());
+}
+
+function logOutput(pullRequests) {
+  pullRequests.forEach((pr) => {
+    console.log(`${pr.number} ${pr.user.login} ${pr.title}`);
+  });
 }
