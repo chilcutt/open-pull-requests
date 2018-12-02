@@ -18,11 +18,7 @@ const args = minimist(process.argv.slice(2), {
 
 async function perform() {
   const pullRequests = await getPullRequests(args);
-  if (args.display == 'url') {
-    logUrls(pullRequests);
-  } else {
-    logOutput(pullRequests);
-  }
+  printOutput({ pullRequests, type: args.display });
 }
 
 perform();
@@ -49,6 +45,14 @@ function getPullRequestsFromRepo({ token, repo }) {
       },
     },
   ).then(response => response.json());
+}
+
+function printOutput({ pullRequests, type }) {
+  if (type == 'url') {
+    logUrls(pullRequests);
+  } else {
+    logOutput(pullRequests);
+  }
 }
 
 function logOutput(pullRequests) {
