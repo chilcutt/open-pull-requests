@@ -5,11 +5,13 @@ const minimist = require('minimist');
 
 const args = minimist(process.argv.slice(2), {
   alias: {
+    a: 'author',
     d: 'display',
     r: 'repo',
     t: 'token',
   },
   string: [
+    'author',
     'display',
     'token',
     'repo',
@@ -18,7 +20,8 @@ const args = minimist(process.argv.slice(2), {
 
 async function perform() {
   const pullRequests = await getPullRequests(args);
-  printOutput({ pullRequests, type: args.display });
+  const filteredPullRequests = filterPullRequests({ pullRequests, authors: args.author });
+  printOutput({ pullRequests: filteredPullRequests, type: args.display });
 }
 
 perform();
@@ -45,6 +48,16 @@ function getPullRequestsFromRepo({ token, repo }) {
       },
     },
   ).then(response => response.json());
+}
+
+function filterPullRequests({ pullRequests, authors }) {
+  if (!authors) {
+    return pullRequests;
+  } else if (Array.isArray(authors)) {
+    return pullRequests.filter(pr => authors.includes(pr.user.login));
+  } else {
+    return pullRequests.filter(pr => pr.user.login == authors);
+  }
 }
 
 function printOutput({ pullRequests, type }) {
