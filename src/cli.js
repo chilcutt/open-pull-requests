@@ -20,7 +20,7 @@ const args = minimist(process.argv.slice(2), {
 
 async function perform() {
   const pullRequests = await getPullRequests(args);
-  const filteredPullRequests = filterPullRequests({ pullRequests, authors: args.author });
+  const filteredPullRequests = filterPullRequests(pullRequests, args);
   printOutput({ pullRequests: filteredPullRequests, type: args.display });
 }
 
@@ -50,13 +50,17 @@ function getPullRequestsFromRepo({ token, repo }) {
   ).then(response => response.json());
 }
 
-function filterPullRequests({ pullRequests, authors }) {
+function filterPullRequests(pullRequests, args) {
+  return pullRequests.filter(filterByAuthor.bind(this, args.author));
+}
+
+function filterByAuthor(authors, pullRequest) {
   if (!authors) {
-    return pullRequests;
+    return true;
   } else if (Array.isArray(authors)) {
-    return pullRequests.filter(pr => authors.includes(pr.user.login));
+    return authors.includes(pullRequest.user.login);
   } else {
-    return pullRequests.filter(pr => pr.user.login == authors);
+    return pullRequest.user.login == authors;
   }
 }
 
