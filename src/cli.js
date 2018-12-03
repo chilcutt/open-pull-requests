@@ -11,6 +11,9 @@ const args = minimist(process.argv.slice(2), {
     r: 'repo',
     t: 'token',
   },
+  boolean: [
+    'exclude_already_approved',
+  ],
   string: [
     'author',
     'display',
@@ -23,7 +26,7 @@ const args = minimist(process.argv.slice(2), {
 
 async function perform() {
   const pullRequests = await getPullRequests(args);
-  const filteredPullRequests = filterPullRequests(pullRequests, args);
+  const filteredPullRequests = await filterPullRequests(pullRequests, args);
   printOutput({ pullRequests: filteredPullRequests, type: args.display });
 }
 
@@ -73,13 +76,33 @@ function getPullRequestReviews({ token, repo, pullRequest }) {
   ).then(response => response.json());
 }
 
-function filterPullRequests(pullRequests, args) {
+async function filterPullRequests(pullRequests, args) {
+  let currentUser;
+
+  if (args.exclude_already_approved) {
+    currentUser = await getCurrentUser(args.token);
+  }
+
   return (
     pullRequests
       .filter(filterByAuthor.bind(this, args.author))
       .filter(filterByLabel.bind(this, args.label))
       .filter(filterEnoughApprovals.bind(this, args.required_approvals))
+      .filter(filterAlreadyReviewed.bind(this, args.exclude_already_approved, currentUser))
   );
+}
+
+function getCurrentUser(token) {
+  return fetch(
+    'https://api.github.com/user',
+    {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  ).then(response => response.json());
 }
 
 function filterByAuthor(authors, pullRequest) {
@@ -110,6 +133,16 @@ function filterEnoughApprovals(requiredApprovals, pullRequest) {
     return total;
   }, 0);
   return numApprovals < requiredApprovals;
+}
+
+function filterAlreadyReviewed(enabled, currentUser, pullRequest) {
+  if (!enabled) {
+    return true;
+  }
+
+  return !pullRequest.reviews.some((review) => (
+    review.user.login == currentUser.login && review.state == 'APPROVED'
+  ));
 }
 
 function printOutput({ pullRequests, type }) {
