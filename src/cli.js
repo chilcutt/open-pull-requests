@@ -29,14 +29,11 @@ async function perform() {
 perform();
 
 async function getPullRequests({ token, repo }) {
-  if (Array.isArray(repo)) {
-    const dataFromRepos = await Promise.all(repo.map((r) => {
-      return getPullRequestsFromRepo({ token, repo: r });
-    }));
-    return [].concat(...dataFromRepos);
-  } else {
-    return getPullRequestsFromRepo({ token, repo });
-  }
+  const repoArray = [].concat(repo);
+  const dataFromRepos = await Promise.all(repoArray.map((r) => {
+    return getPullRequestsFromRepo({ token, repo: r });
+  }));
+  return [].concat(...dataFromRepos);
 }
 
 function getPullRequestsFromRepo({ token, repo }) {
@@ -63,21 +60,17 @@ function filterPullRequests(pullRequests, args) {
 function filterByAuthor(authors, pullRequest) {
   if (!authors) {
     return true;
-  } else if (Array.isArray(authors)) {
-    return authors.includes(pullRequest.user.login);
-  } else {
-    return pullRequest.user.login == authors;
   }
+  const authorArray = [].concat(authors);
+  return authorArray.includes(pullRequest.user.login);
 }
 
 function filterByLabel(labels, pullRequest) {
   if (!labels) {
     return true;
-  } else if (Array.isArray(labels)) {
-    return pullRequest.labels.some(l => labels.includes(l.name));
-  } else {
-    return pullRequest.labels.some(l => l.name == labels);
   }
+  const labelsArray = [].concat(labels);
+  return pullRequest.labels.some(l => labelsArray.includes(l.name));
 }
 
 function printOutput({ pullRequests, type }) {
