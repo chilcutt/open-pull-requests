@@ -16,6 +16,7 @@ const args = minimist(process.argv.slice(2), {
     'display',
     'label',
     'repo',
+    'required_approvals',
     'token',
   ],
 });
@@ -36,9 +37,32 @@ async function getPullRequests({ token, repo }) {
   return [].concat(...dataFromRepos);
 }
 
-function getPullRequestsFromRepo({ token, repo }) {
-  return fetch(
+async function getPullRequestsFromRepo({ token, repo }) {
+  const repoPullRequests = await fetch(
     `https://api.github.com/repos/${repo}/pulls`,
+    {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  ).then(response => response.json());
+
+  const repoPullRequestReviews = await Promise.all(
+    repoPullRequests.map(pullRequest => getPullRequestReviews({ token, repo, pullRequest }))
+  );
+
+  repoPullRequests.forEach((pullRequest, index) => {
+    pullRequest.reviews = repoPullRequestReviews[index];
+  });
+
+  return repoPullRequests;
+}
+
+function getPullRequestReviews({ token, repo, pullRequest }) {
+  return fetch(
+    `https://api.github.com/repos/${repo}/pulls/${pullRequest.number}/reviews`,
     {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
@@ -54,6 +78,7 @@ function filterPullRequests(pullRequests, args) {
     pullRequests
       .filter(filterByAuthor.bind(this, args.author))
       .filter(filterByLabel.bind(this, args.label))
+      .filter(filterEnoughApprovals.bind(this, args.required_approvals))
   );
 }
 
@@ -71,6 +96,20 @@ function filterByLabel(labels, pullRequest) {
   }
   const labelsArray = [].concat(labels);
   return pullRequest.labels.some(l => labelsArray.includes(l.name));
+}
+
+function filterEnoughApprovals(requiredApprovals, pullRequest) {
+  if (!requiredApprovals) {
+    return true;
+  }
+
+  const numApprovals = pullRequest.reviews.reduce((total, review) => {
+    if (review.state == 'APPROVED') {
+      return total + 1;
+    }
+    return total;
+  }, 0);
+  return numApprovals < requiredApprovals;
 }
 
 function printOutput({ pullRequests, type }) {
