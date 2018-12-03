@@ -7,14 +7,16 @@ const args = minimist(process.argv.slice(2), {
   alias: {
     a: 'author',
     d: 'display',
+    l: 'label',
     r: 'repo',
     t: 'token',
   },
   string: [
     'author',
     'display',
-    'token',
+    'label',
     'repo',
+    'token',
   ],
 });
 
@@ -51,7 +53,11 @@ function getPullRequestsFromRepo({ token, repo }) {
 }
 
 function filterPullRequests(pullRequests, args) {
-  return pullRequests.filter(filterByAuthor.bind(this, args.author));
+  return (
+    pullRequests
+      .filter(filterByAuthor.bind(this, args.author))
+      .filter(filterByLabel.bind(this, args.label))
+  );
 }
 
 function filterByAuthor(authors, pullRequest) {
@@ -61,6 +67,16 @@ function filterByAuthor(authors, pullRequest) {
     return authors.includes(pullRequest.user.login);
   } else {
     return pullRequest.user.login == authors;
+  }
+}
+
+function filterByLabel(labels, pullRequest) {
+  if (!labels) {
+    return true;
+  } else if (Array.isArray(labels)) {
+    return pullRequest.labels.some(l => labels.includes(l.name));
+  } else {
+    return pullRequest.labels.some(l => l.name == labels);
   }
 }
 
