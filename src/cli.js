@@ -5,15 +5,17 @@ const minimist = require('minimist');
 
 const args = minimist(process.argv.slice(2), {
   alias: {
+    L: 'exclude_label',
     a: 'author',
     d: 'display',
+    h: 'help',
     l: 'include_label',
-    L: 'exclude_label',
     r: 'repo',
     t: 'token',
   },
   boolean: [
     'exclude_already_approved',
+    'help',
   ],
   string: [
     'author',
@@ -26,13 +28,35 @@ const args = minimist(process.argv.slice(2), {
   ],
 });
 
+if (args.help) {
+  console.log(
+`
+  Usage: open_pull_requests [options]
+
+  Options:
+    -a, --author                    Filter results by author, supports multiple uses
+    -d, --display [url]             Show results in different format.
+                                      "url" - only display URLs for each result
+        --exclude_already_approved  Exclude results already approved by authenticated user, boolean flag
+    -l, --include_label             Only include results that have a given label, supports multiple uses
+    -L, --exclude_label             Exclude results that have a given label, supports multiple uses
+    -r, --repo                      Include GitHub repository in query, supports multiple uses
+                                      format: ":org/:repo"
+    -t, --token                     GitHub API token to use for authentication
+
+  Notes:
+    At least 1 repo (-r) and exactly 1 token (-t) are required.
+`
+  );
+} else {
+  perform();
+}
+
 async function perform() {
   const pullRequests = await getPullRequests(args);
   const filteredPullRequests = await filterPullRequests(pullRequests, args);
   printOutput({ pullRequests: filteredPullRequests, type: args.display });
 }
-
-perform();
 
 async function getPullRequests({ token, repo }) {
   const repoArray = [].concat(repo);
