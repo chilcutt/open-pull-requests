@@ -1,6 +1,6 @@
 {
   "name": "open-pull-requests",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Query pull requests from GitHub API",
   "repository": "chilcutt/open-pull-requests",
   "author": "Kyle Chilcutt <kyle@chilcutt.com>",
