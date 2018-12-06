@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+csv-string@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/csv-string/-/csv-string-3.1.5.tgz#73dd789dbddc8be11bb5b2c4a164243d6587d4a8"
+  integrity sha512-vkKwis9X1l31JwPsnqaoNo3PZx7k+07dlDDJ0jXgq7tCH3lIxiIaD9sAt9ETBjKFUR+nNi7PnTTpZuFy6kJe4w==
+
 minimist@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const csv = require('csv-string');
 const fetch = require('node-fetch');
 const minimist = require('minimist');
 
@@ -35,8 +36,9 @@ if (args.help) {
 
   Options:
     -a, --author                    Filter results by author, supports multiple uses
-    -d, --display [url]             Show results in different format.
+    -d, --display [url,csv]         Show results in different format.
                                       "url" - only display URLs for each result
+                                      "csv" - display CSV-compatible output for parsing
         --exclude_already_approved  Exclude results already approved by authenticated user, boolean flag
     -l, --include_label             Only include results that have a given label, supports multiple uses
     -L, --exclude_label             Exclude results that have a given label, supports multiple uses
@@ -180,21 +182,39 @@ function filterAlreadyReviewed(enabled, currentUser, pullRequest) {
 }
 
 function printOutput({ pullRequests, type }) {
-  if (type == 'url') {
-    logUrls(pullRequests);
-  } else {
-    logOutput(pullRequests);
+  switch(type) {
+    case 'url':
+      printUrls(pullRequests);
+      break;
+    case 'csv':
+      printCsv(pullRequests);
+      break;
+    default:
+      printOutput(pullRequests);
   }
 }
 
-function logOutput(pullRequests) {
+function printUrls(pullRequests) {
   pullRequests.forEach((pr) => {
-    console.log(`${pr.head.repo.full_name} ${pr.number} ${pr.user.login} ${pr.title}`);
+    console.log(pr.html_url);
   });
 }
 
-function logUrls(pullRequests) {
+function printCsv(pullRequests) {
+  const csvData = pullRequests.reduce(((data, pullRequest) => {
+    return [...data, [
+      pullRequest.head.repo.full_name,
+      pullRequest.number,
+      pullRequest.user.login,
+      pullRequest.title,
+      pullRequest.labels.map(l => l.name),
+    ]];
+  }), []);
+  console.log(csv.stringify(csvData));
+}
+
+function printOutput(pullRequests) {
   pullRequests.forEach((pr) => {
-    console.log(pr.html_url);
+    console.log(`${pr.head.repo.full_name} ${pr.number} ${pr.user.login} ${pr.title}`);
   });
 }
