@@ -70,7 +70,7 @@ async function getPullRequests({ token, repo }) {
 
 async function getPullRequestsFromRepo({ token, repo }) {
   const repoPullRequests = await fetch(
-    `https://api.github.com/repos/${repo}/pulls`,
+    `https://api.github.com/repos/${repo}/pulls?per_page=100`,
     {
       headers: {
         'Accept': 'application/vnd.github.v3+json',

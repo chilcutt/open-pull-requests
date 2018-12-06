@@ -49,3 +49,7 @@ open_team_prs() {
     | xargs -I {} open -a 'Google Chrome' {}
 }
 ```
+
+## Notes
+
+This utility currently loads the first 100 Pull Request per repo and does not support GitHub API pagination.
