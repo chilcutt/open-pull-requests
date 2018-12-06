@@ -8,7 +8,7 @@ const args = minimist(process.argv.slice(2), {
   alias: {
     L: 'exclude_label',
     a: 'author',
-    d: 'display',
+    f: 'format',
     h: 'help',
     l: 'include_label',
     r: 'repo',
@@ -20,8 +20,8 @@ const args = minimist(process.argv.slice(2), {
   ],
   string: [
     'author',
-    'display',
     'exclude_label',
+    'format',
     'include_label',
     'repo',
     'required_approvals',
@@ -36,9 +36,9 @@ if (args.help) {
 
   Options:
     -a, --author                    Filter results by author, supports multiple uses
-    -d, --display [url,csv]         Show results in different format.
-                                      "url" - only display URLs for each result
-                                      "csv" - display CSV-compatible output for parsing
+    -f, --format [url,csv]          Output results in different format.
+                                      "url" - only output URLs for each result
+                                      "csv" - output CSV-compatible output for parsing
         --exclude_already_approved  Exclude results already approved by authenticated user, boolean flag
     -l, --include_label             Only include results that have a given label, supports multiple uses
     -L, --exclude_label             Exclude results that have a given label, supports multiple uses
@@ -57,7 +57,7 @@ if (args.help) {
 async function perform() {
   const pullRequests = await getPullRequests(args);
   const filteredPullRequests = await filterPullRequests(pullRequests, args);
-  printOutput({ pullRequests: filteredPullRequests, type: args.display });
+  printOutput({ pullRequests: filteredPullRequests, type: args.format });
 }
 
 async function getPullRequests({ token, repo }) {
