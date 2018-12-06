@@ -7,7 +7,8 @@ const args = minimist(process.argv.slice(2), {
   alias: {
     a: 'author',
     d: 'display',
-    l: 'label',
+    l: 'include_label',
+    L: 'exclude_label',
     r: 'repo',
     t: 'token',
   },
@@ -17,7 +18,8 @@ const args = minimist(process.argv.slice(2), {
   string: [
     'author',
     'display',
-    'label',
+    'exclude_label',
+    'include_label',
     'repo',
     'required_approvals',
     'token',
@@ -86,7 +88,8 @@ async function filterPullRequests(pullRequests, args) {
   return (
     pullRequests
       .filter(filterByAuthor.bind(this, args.author))
-      .filter(filterByLabel.bind(this, args.label))
+      .filter(filterIncludedLabels.bind(this, args.include_label))
+      .filter(filterExcludedLabels.bind(this, args.exclude_label))
       .filter(filterEnoughApprovals.bind(this, args.required_approvals))
       .filter(filterAlreadyReviewed.bind(this, args.exclude_already_approved, currentUser))
   );
@@ -113,12 +116,19 @@ function filterByAuthor(authors, pullRequest) {
   return authorArray.includes(pullRequest.user.login);
 }
 
-function filterByLabel(labels, pullRequest) {
+function filterIncludedLabels(labels, pullRequest) {
   if (!labels) {
     return true;
   }
   const labelsArray = [].concat(labels);
   return pullRequest.labels.some(l => labelsArray.includes(l.name));
+}
+
+function filterExcludedLabels(labels, pullRequest) {
+  if (!labels) {
+    return true;
+  }
+  return !filterIncludedLabels(labels, pullRequest);
 }
 
 function filterEnoughApprovals(requiredApprovals, pullRequest) {
