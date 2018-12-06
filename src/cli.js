@@ -190,7 +190,7 @@ function printOutput({ pullRequests, type }) {
       printCsv(pullRequests);
       break;
     default:
-      printOutput(pullRequests);
+      printDisplay(pullRequests);
   }
 }
 
@@ -213,7 +213,7 @@ function printCsv(pullRequests) {
   console.log(csv.stringify(csvData));
 }
 
-function printOutput(pullRequests) {
+function printDisplay(pullRequests) {
   pullRequests.forEach((pr) => {
     console.log(`${pr.head.repo.full_name} ${pr.number} ${pr.user.login} ${pr.title}`);
   });
